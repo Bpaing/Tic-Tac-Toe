@@ -1,0 +1,31 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+}
+
+body,
+.tile {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.board {
+    list-style: none;
+    background-color: black;
+    display:grid;
+    grid-template-rows: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
+    width: max(50vh, 50vw);
+    height: max(50vh, 50vw);
+    gap: 5px;
+}
+
+.tile {
+    background-color: white;
+    font-size: max(10vw, 10vh);
+}
