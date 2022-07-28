@@ -6,20 +6,20 @@ const Player = (mark) => {
 
 const gameboard = (() => {
     let _board = Array(9).fill('');
-    let filledSpaces = 0;
 
     const addMark = (mark, index) => {
-        if(board[index] == '') {
-            board[index] = mark;
-            filledSpaces++;
+        if(_board[index] == '') {
+            _board[index] = mark;
         }
     }
+
+    const getBoard = () => _board;
 
     const reset = () => {
         _board.fill('');
     }
 
-    return {addMark, reset};
+    return {addMark, getBoard, reset};
 })();
 
 const displayController = (() => {
@@ -35,9 +35,9 @@ const displayController = (() => {
         }
     }
 
-    const refresh = (board) => {
+    const refresh = () => {
         const tiles = [...document.querySelector('.board').children];
-        if (!Array.isArray(board) || tiles.length != board.length) { return; }
+        const board = gameboard.getBoard();
         for (let i = 0; i < tiles.length; i++) {
             tiles[i].textContent = board[i];
         }
@@ -60,16 +60,15 @@ const gameController = (() => {
     let _aiPlayer = Player('O');
     let _currentTurn = _humanPlayer;
 
-    const _fillTile = (player) => {
-        console.log('hey');
-        console.log(this);
-        this.textContent = _humanPlayer.getMark();
+    const _fillTile = (tile) => {
+        gameboard.addMark(_currentTurn.getMark(), tile.dataset.index);
+        displayController.refresh();
     }
 
     const startGame = () => {
         displayController.generate();
         const tiles = [...document.querySelector('ul').children];
-        tiles.forEach(elem => elem.addEventListener('click', ));
+        tiles.forEach(elem => elem.addEventListener('click', _fillTile.bind(this, elem)));
     }
 
     const checkForWin = () => {
