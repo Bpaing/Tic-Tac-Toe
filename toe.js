@@ -10,6 +10,8 @@ const gameboard = (() => {
     const addMark = (mark, index) => {
         if(_board[index] == '') {
             _board[index] = mark;
+        } else {
+            alert('This tile is already filled.');
         }
     }
 
@@ -60,43 +62,94 @@ const gameController = (() => {
     let _aiPlayer = Player('O');
     let _currentTurn = _humanPlayer;
 
-    const _fillTile = (tile) => {
-        gameboard.addMark(_currentTurn.getMark(), tile.dataset.index);
-        displayController.refresh();
+    let _filledSpaces = 0;
+    let _outcome = {
+        hasWinner: false,
+        mark: ''
+    };
+
+    const _checkRows = (board) => {
+        if (_outcome.hasWinner) { return; }
+        for (let i = 0; i < board.length; i+=3) {
+            const win = board[i] != '' && (board[i] == board[i+1]) && (board[i] == board[i+2]);
+            if(win) { 
+                console.log('row win');
+                _outcome.hasWinner = true;
+                _outcome.mark = board[i] 
+                break;
+            };
+        }
     }
 
-    const startGame = () => {
-        displayController.generate();
-        const tiles = [...document.querySelector('ul').children];
-        tiles.forEach(elem => elem.addEventListener('click', _fillTile.bind(this, elem)));
+    const _checkColumns = (board) => {
+        if (_outcome.hasWinner) { return; }
+        for (let i = 0; i < board.length/3; i++) {
+            const win = board[i] != '' && (board[i] == board[i+3]) && (board[i] == board[i+6]);
+            if(win) { 
+                console.log('col win');
+                _outcome.hasWinner = true;
+                _outcome.mark = board[i] 
+                break;
+            };
+        }
     }
 
-    const checkForWin = () => {
+    const _checkDiagonals = (board) => {
+        if (_outcome.hasWinner) { return; }
+        for (let i = 2; i < 5; i+=2) {
+            const center = parseInt(board.length/2);
+            const win = board[center] != '' && (board[center] == board[center-i]) && (board[center] == board[center+i]);
+            if(win) { 
+                console.log('diag win');
+                _outcome.hasWinner = true;
+                _outcome.mark = board[i] 
+                break;
+            };
+        }
+    }
+
+    const _checkForWin = () => {
         /*
             0   1   2
             3   4   5
             6   7   8
         */
-        let mark = '';
+        let board = gameboard.getBoard();
+        _checkRows(board);
+        _checkColumns(board);
+        _checkDiagonals(board);
+        
+        if (_outcome.hasWinner) 
+            console.log(`${_outcome.mark} wins.`);
+        
+        if (_filledSpaces == board.length && !_outcome.hasWinner)
+            console.log('draw.');
 
-        //check rows
-        for (let i = 0; i < board.length; i+3) {
-            const win = (board[i] == board[i+1]) && (board[i] == board[i+2]);
-            if(win) { mark = board[i] };
-        }
+    }
 
-        //check columns
-        for (let i = 0; i < board.length/3; i++) {
-            const win = (board[i] == board[i+3]) && (board[i] == board[i+6]);
-            if(win) { mark = board[i] };
-        }
+    const _changeTurn = () => {
+        _currentTurn = (_currentTurn == _humanPlayer) ? _aiPlayer : _humanPlayer;
+    }
 
-        // check diagonals
-        for (let i = 2; i < 5; i+2) {
-            const center = board.length/2;
-            const win = (board[center] == board[center + i]) && (board[i] == board[center - i]);
-            if(win) { mark = board[i] };
-        }
+    const _fillTile = (tile) => {
+        gameboard.addMark(_currentTurn.getMark(), tile.dataset.index);
+        _filledSpaces++;
+        displayController.refresh();
+    }
+
+    const _playTurn = (tile) => {
+        //prevent play after win
+        if (_outcome.hasWinner) { return; }
+
+        _fillTile(tile);
+        _checkForWin();
+        _changeTurn();
+    }
+
+    const startGame = () => {
+        displayController.generate();
+        const tiles = [...document.querySelector('ul').children];
+        tiles.forEach(elem => elem.addEventListener('click', _playTurn.bind(this, elem)));
     }
 
     return {startGame};
