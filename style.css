@@ -6,18 +6,27 @@
 
 body {
     height: 100vh;
+    display: grid;
+    grid-template-rows: 50px 1fr;
 }
 
-body,
-.tile {
+.tile,
+#game,
+#menu {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
+#game {
+    flex-direction: column;
+}
+
 .board {
     list-style: none;
     background-color: black;
+    justify-self: center;
+    align-self: center;
     display:grid;
     grid-template-rows: repeat(3, 1fr);
     grid-template-columns: repeat(3, 1fr);

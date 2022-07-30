@@ -8,11 +8,7 @@ const gameboard = (() => {
     let _board = Array(9).fill('');
 
     const addMark = (mark, index) => {
-        if(_board[index] == '') {
             _board[index] = mark;
-        } else {
-            alert('This tile is already filled.');
-        }
     }
 
     const getBoard = () => _board;
@@ -28,7 +24,7 @@ const displayController = (() => {
     const generate = () => {
         const ul = document.createElement('ul');
         ul.classList.add('board');
-        document.body.replaceChildren(ul);
+        document.querySelector('#game').replaceChildren(ul);
         for (let i = 0; i < 9; i++) {
             const li = document.createElement('li');
             li.classList.add('tile');
@@ -45,22 +41,16 @@ const displayController = (() => {
         }
     }
 
-    const reset = () => {
-        const ul = document.querySelector('ul');
-        [...ul.children].forEach(li => li.textContent='');
-    }
-
     return {
         generate, 
-        refresh, 
-        reset
+        refresh
     };
 })();
 
 const gameController = (() => {
-    let _humanPlayer = Player('X');
-    let _aiPlayer = Player('O');
-    let _currentTurn = _humanPlayer;
+    let _playerOne = Player('X');
+    let _playerTwo = Player('O');
+    let _currentTurn = _playerOne;
 
     let _filledSpaces = 0;
     let _outcome = {
@@ -120,20 +110,22 @@ const gameController = (() => {
         _checkDiagonals(board);
         
         if (_outcome.hasWinner) 
-            console.log(`${_outcome.mark} wins.`);
+            alert(`${_outcome.mark} wins.`);
         
         if (_filledSpaces == board.length && !_outcome.hasWinner)
-            console.log('draw.');
+            alert('draw.');
 
     }
 
     const _changeTurn = () => {
-        _currentTurn = (_currentTurn == _humanPlayer) ? _aiPlayer : _humanPlayer;
+        _currentTurn = (_currentTurn == _playerOne) ? _playerTwo : _playerOne;
     }
 
     const _fillTile = (tile) => {
-        gameboard.addMark(_currentTurn.getMark(), tile.dataset.index);
-        _filledSpaces++;
+        const index = tile.dataset.index;
+        if (gameboard.getBoard()[index] != '') { return; }
+        gameboard.addMark(_currentTurn.getMark(), index);
+        console.log(_filledSpaces);
         displayController.refresh();
     }
 
@@ -146,13 +138,49 @@ const gameController = (() => {
         _changeTurn();
     }
 
+    const reset = () => {
+        gameboard.reset();
+        displayController.refresh();
+        _filledSpaces = 0;
+        _outcome.hasWinner = false;
+        _outcome.mark = '';
+    }
+
     const startGame = () => {
         displayController.generate();
         const tiles = [...document.querySelector('ul').children];
         tiles.forEach(elem => elem.addEventListener('click', _playTurn.bind(this, elem)));
     }
 
-    return {startGame};
+    return {startGame, reset};
 })();
 
-gameController.startGame();
+const menuController = (() => {
+    const generateButtons = () => {
+        const menu = document.querySelector('#menu');
+        const restart = document.createElement('button');
+        restart.textContent = 'restart';
+        restart.addEventListener('click', gameController.reset);
+        menu.append(restart);
+    }
+
+    const playerSelection = () => {
+        const game = document.querySelector('#game');
+        const h1 = document.createElement('h1');
+        h1.textContent = "How many players?"
+        const selection = document.createElement('div');
+        for (let i = 0; i < 2; i++) {
+            const button = document.createElement('button');
+            button.textContent = `${i+1} player`;
+            button.addEventListener('click', gameController.startGame);
+            selection.append(button);
+        }
+
+        game.append(h1);
+        game.append(selection);
+    }
+
+    return { playerSelection };
+})();
+
+menuController.playerSelection();
