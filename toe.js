@@ -156,28 +156,49 @@ const gameController = (() => {
 })();
 
 const menuController = (() => {
-    const generateButtons = () => {
+    const _generateButtons = () => {
         const menu = document.querySelector('#menu');
+        menu.replaceChildren();
+
+        const reselect = document.createElement('button');
+        reselect.textContent = 'reselect';
+        reselect.addEventListener('click', playerSelection);
+
         const restart = document.createElement('button');
         restart.textContent = 'restart';
         restart.addEventListener('click', gameController.reset);
+
+        menu.append(reselect);
         menu.append(restart);
     }
 
+    const _setupGame = (numberOfPlayers) => {
+        console.log(numberOfPlayers);
+        gameController.startGame();
+        _generateButtons();
+    }
+
     const playerSelection = () => {
-        const game = document.querySelector('#game');
+        const body = document.body;
+        body.replaceChildren();
+        const menu = document.createElement('div');
+        menu.id = 'menu';
+        const game = document.createElement('div')
+        game.id = 'game';
+        body.append(menu);
+        body.append(game);
+
         const h1 = document.createElement('h1');
         h1.textContent = "How many players?"
-        const selection = document.createElement('div');
+        menu.append(h1);
+
         for (let i = 0; i < 2; i++) {
             const button = document.createElement('button');
             button.textContent = `${i+1} player`;
-            button.addEventListener('click', gameController.startGame);
-            selection.append(button);
+            button.dataset.num = i+1;
+            button.addEventListener('click', _setupGame.bind(this,button.dataset.num));
+            menu.append(button);
         }
-
-        game.append(h1);
-        game.append(selection);
     }
 
     return { playerSelection };
