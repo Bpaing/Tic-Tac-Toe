@@ -151,6 +151,15 @@ const gameController = (() => {
 
 
 // UI and Setup
+
+/*
+    Prompt for one or two players
+    Prompt to enter names
+    Render gameboard, names, and buttons
+    Restart: clear game state to default start
+    Reselect: reprompt one/two player UI
+    If playing against computer, use algorithm
+    */
 const displayController = (() => {
     const generateBoard = () => {
         const ul = document.createElement('ul');
@@ -172,15 +181,30 @@ const displayController = (() => {
         }
     }
 
-    return {
-        generateBoard, 
-        refresh
-    };
-})();
+    const playerPrompt = () => {
+        const body = document.body;
+        body.replaceChildren();
+        const menu = document.createElement('div');
+        menu.id = 'menu';
+        const game = document.createElement('div')
+        game.id = 'game';
+        body.append(menu);
+        body.append(game);
 
-const menuController = (() => {
+        const h1 = document.createElement('h1');
+        h1.textContent = "How many players?"
+        menu.append(h1);
 
-    const _generateNameInput = (numPlayers) => {
+        for (let i = 0; i < 2; i++) {
+            const button = document.createElement('button');
+            button.textContent = `${i+1} player`;
+            button.dataset.num = i+1;
+            button.addEventListener('click', _namePrompt.bind(this,button.dataset.num));
+            menu.append(button);
+        }
+    }
+
+    const _namePrompt = (numPlayers) => {
         const menu = document.querySelector('#menu');
         const form = document.createElement('form');
 
@@ -201,18 +225,18 @@ const menuController = (() => {
         button.form = form;
         form.append(button);
 
-        form.addEventListener('submit', _setupGame);
+        form.addEventListener('submit', _generateGameboard);
 
         menu.replaceChildren(form);
     }
 
-    const _generateGameButtons = () => {
+    const _generateButtons = () => {
         const menu = document.querySelector('#menu');
         menu.replaceChildren();
 
         const reselect = document.createElement('button');
         reselect.textContent = 'reselect';
-        reselect.addEventListener('click', playerSelection);
+        reselect.addEventListener('click', playerPrompt);
 
         const restart = document.createElement('button');
         restart.textContent = 'restart';
@@ -222,38 +246,19 @@ const menuController = (() => {
         menu.append(restart);
     }
 
-    const _setupGame = (e) => {
+    const _generateGameboard = (e) => {
         e.preventDefault();
         const names = [...document.querySelectorAll('form input')];
         names.forEach((input, index) => names[index] = input.value);
         gameController.startGame(names);
-        _generateGameButtons();
+        _generateButtons();
     }
 
-    const playerSelection = () => {
-        const body = document.body;
-        body.replaceChildren();
-        const menu = document.createElement('div');
-        menu.id = 'menu';
-        const game = document.createElement('div')
-        game.id = 'game';
-        body.append(menu);
-        body.append(game);
-
-        const h1 = document.createElement('h1');
-        h1.textContent = "How many players?"
-        menu.append(h1);
-
-        for (let i = 0; i < 2; i++) {
-            const button = document.createElement('button');
-            button.textContent = `${i+1} player`;
-            button.dataset.num = i+1;
-            button.addEventListener('click', _generateNameInput.bind(this,button.dataset.num));
-            menu.append(button);
-        }
-    }
-
-    return { playerSelection };
+    return {
+        generateBoard, 
+        refresh,
+        playerPrompt
+    };
 })();
 
-menuController.playerSelection();
+displayController.playerPrompt();
